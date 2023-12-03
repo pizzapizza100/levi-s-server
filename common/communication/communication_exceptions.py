@@ -10,10 +10,12 @@ Description:
 
 
 #   - - - - - Classes - - - - -   #
+
 class NonJsonMessage(Exception):
     ...
 
 
 class BadlyFormattedMessage(Exception):
     ...
+
 #   - - - - - Functions - - - - -   #

@@ -9,6 +9,9 @@ Description:
 
 
 #   - - - - - Classes - - - - -   #
+
+# Database file exceptions
+
 class DataBaseFileNotFound(Exception):
     ...
 
@@ -17,8 +20,9 @@ class DataBaseFileContentInvalid(Exception):
     ...
 
 
-class FileTrailerIsNotValid(Exception):
+class DataBaseFileTrailerIsNotValid(Exception):
     ...
 
+# File system manager exceptions
 
 #   - - - - - Functions - - - - -   #

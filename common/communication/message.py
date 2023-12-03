@@ -24,9 +24,12 @@ class MessageType(Enum):
     LOGIN = auto()
     LOGOUT = auto()
 
-    # file_handling handling
+    # file_handling
     DOWNLOAD_FILE = auto()  
     UPLOAD_FILE = auto()
+    DELETE_FILE = auto()
+    RENAME_FILE = auto()
+
 
 
 class Message:

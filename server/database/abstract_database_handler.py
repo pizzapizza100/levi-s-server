@@ -3,45 +3,42 @@ Description:
 """
 
 #   - - - - - Imports - - - - -   #
-import logging
-
 import asyncio
+import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
+
 from server.database.database_exceptions import DataBaseFileNotFound
-from server.file_handling.file_handler import FileHandler
+from server.database.file_system_manager import FileSystemManager
+from common.user.user import User, UserPermissions
+
 
 #   - - - - - Constants - - - - -   #
 
 
 #   - - - - - Classes - - - - -   #
-from server.user.user import User
-from server.user.user_permissions import UserPermissions
-
 
 class AbstractDataBaseManager(ABC):
     def __init__(self, database_path: Path):
-        self.database_mutex = asyncio.Lock()
-        self.database_path: Path = database_path
-        self.file_system_path: Path = database_path.parent
+        self._database_path: Path = database_path
+        self._database_mutex = asyncio.Lock()
+        self._file_system_manager = FileSystemManager(database_path.parent)
 
     async def create(self, database_path: Path = None, override_exiting: bool = False,
-                     create_if_missing: bool = False) -> "AbstractDataBaseManager":
+                     create_if_missing: bool = False):
         if database_path is None:
-            database_path = self.database_path
+            database_path = self._database_path
 
         if database_path.exists():
             if override_exiting:
-                logging.warning(f"Overriding database at {self.database_path}")
+                logging.warning(f"Overriding database at {self._database_path}")
                 await self.create_new_database(database_path)
             else:
-                logging.info(f"Found database at {self.database_path}")
+                logging.info(f"Found database at {self._database_path}")
         elif create_if_missing:
             await self.create_new_database(database_path, use_new_database=True)
         else:
             raise DataBaseFileNotFound()
-
-        return self
 
     # --- database's functions --- #
 
@@ -58,13 +55,23 @@ class AbstractDataBaseManager(ABC):
         ...
 
     # --- files' functions --- #
-    @abstractmethod
-    async def get_file(self, file: str):
-        ...
+    async def get_file(self, file_name: Path):
+        return await self._file_system_manager.get_file(file_path=file_name)
+
+    async def save_file(self, file_path: Path, file_data: bytes):
+        await self._file_system_manager.save_file(file_path=file_path, file_data=file_data)
+
+    async def delete_file(self, file_path: Path):
+        await self._file_system_manager.delete_file(file_path=file_path)
+
+    async def move_file(self, source_file_path: Path, destination_file_path: Path):
+        await self._file_system_manager.move_file(source_file_path=source_file_path,
+                                                  destination_file_path=destination_file_path)
+
     # --- users' functions --- #
 
     @abstractmethod
-    async def get_user_permissions(self, user_id):
+    async def get_user(self, user_id: str) -> User:
         ...
 
     @abstractmethod
